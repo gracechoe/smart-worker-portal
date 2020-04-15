@@ -77,6 +77,7 @@ class App extends Component {
                 <br />
                 <h1>AR Smart Worker Web Portal</h1>
                 <FileInput handleSubmit={this.handleFileSubmit}/>
+                <img src={this.state.file} alt="image"/>
             </div>
 
         )

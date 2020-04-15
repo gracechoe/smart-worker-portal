@@ -2,12 +2,12 @@ import React, { Component } from 'react'
 
 class FileInput extends Component {
     initialState = {
-        projectName: '',
-        file: '',
+        projectName: "",
+        file: null,
     }
     state = this.initialState
 
-    // fileInput = React.createRef();
+    fileInput = React.createRef();
 
     handleNameChange = event => {
         const { name, value } = event.target
@@ -18,10 +18,10 @@ class FileInput extends Component {
     }
 
     handleFileChange = event => {
-        const { name, value } = event.target
+        const { name } = event.target
 
         this.setState({
-            [name]: value, 
+            [name]: URL.createObjectURL(event.target.files[0]), 
         })
 
         // alert(
@@ -58,7 +58,6 @@ class FileInput extends Component {
                     type="file"
                     name="file" 
                     id="file" 
-                    value={file}
                     onChange={this.handleFileChange}
                     />
                 {/* <input type="file" id="file" ref={this.fileInput} onChange={this.handleChange}/> */}
