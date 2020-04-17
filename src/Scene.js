@@ -1,75 +1,51 @@
-import React, { Component, useState, useEffect, Suspense, useMemo } from 'react'
-import { Canvas, useFrame, useLoader } from 'react-three-fiber'
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
-import * as THREE from 'three'
-// import { Object3D } from 'three'
+import React, { useState, useEffect, Suspense, useMemo, useRef } from "react";
+import { Canvas, useFrame, useLoader } from "react-three-fiber";
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 
-const Box = () => {
-    const [hovered, setHovered] = useState(false)
-    const [active, setActive] = useState(false)
-    const props = {
-      scale: active ? [1.5, 1.5, 1.5] : [1, 1, 1],
-      color: hovered ? "hotpink" : "gray",
-    }
-  
-    return (
-      <mesh
-        onPointerOver={() => setHovered(true)}
-        onPointerOut={() => setHovered(false)}
-        onClick={() => setActive(!active)}
-        scale={props.scale}
-        castShadow
-      >
-        <boxBufferGeometry attach="geometry" args={[1, 1, 1]} />
-        <meshPhysicalMaterial attach="material" color={props.color} />
-      </mesh>
-    )
-}
+const Box = (props) => {
+  const mesh = useRef();
 
-const Model = props => {
-    const [model, setModel] = useState()
-    const { url } = props
+  const [hovered, setHover] = useState(false);
+  const [active, setActive] = useState(false);
 
-    // useMemo(() => {
-    //     new OBJLoader().load(url, setModel)
-    // }, [url])
-    
-    // return model ? <mesh object={model.scene}/> : <Box />
+  useFrame(() => (mesh.current.rotation.x = mesh.current.rotation.y += 0.01));
 
-    useEffect(() => {
-      new OBJLoader().load("/robot.obj", setModel)
-    }, [])
-  
-    return model ? <primitive object={model.scene}/> : null
-}
+  return (
+    <mesh
+      {...props}
+      ref={mesh}
+      scale={active ? [1.5, 1.5, 1.5] : [1, 1, 1]}
+      onClick={(e) => setActive(!active)}
+      onPointerOver={(e) => setHover(true)}
+      onPointerOut={(e) => setHover(false)}
+    >
+      <boxBufferGeometry attach="geometry" args={[1, 1, 1]} />
+      <meshStandardMaterial
+        attach="material"
+        color={hovered ? "hotpink" : "orange"}
+      />
+    </mesh>
+  );
+};
 
-const Asset = props => {
-    const { url } = props
-    const obj = useLoader(OBJLoader, url)
-    return <primitive object={obj.scene} dispose={null}/> 
-}
+const Asset = ({ url }) => {
+  var obj = useLoader(OBJLoader, url);
+  console.log(obj);
+  var mesh = obj.children[0];
+  mesh.scale.set(1, 1, 1);
+  useFrame(() => (mesh.rotation.x = mesh.rotation.y += 0.01));
+  return <primitive object={obj} dispose={null} />;
+};
 
-const Cube = () => {
-    return (
-      <mesh>
-        <boxBufferGeometry attach="geometry" args={[1, 1, 1]} />
-        <meshStandardMaterial attach="material" color={'hotpink'} />
-      </mesh>
-    )
-  }
+const Scene = ({ url }) => {
+  return (
+    <Canvas>
+      <pointLight position={[10, 10, 10]} />
+      <Suspense fallback={<Box />}>
+        <Asset url={String(url)} />
+      </Suspense>
+    </Canvas>
+  );
+};
 
-const Scene = props => {
-    // const { url } = props
-    const url = process.env.PUBLIC_URL + "lego.obj"
-    return (
-        <Canvas>
-            {/* <Box /> */}
-            {/* <Model url={url}/> */}
-            <Suspense fallback={<Cube />}>
-                <Asset url={url} />
-            </Suspense>
-        </Canvas>
-    )
-}
-
-export default Scene
+export default Scene;
