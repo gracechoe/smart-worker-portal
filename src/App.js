@@ -10,7 +10,8 @@ class App extends Component {
   state = {
     characters: [],
     projectName: "",
-    file: "/robot.obj",
+    fileName: "robot.obj",
+    url: "/robot.obj",
   };
 
   removeCharacter = (index) => {
@@ -30,12 +31,13 @@ class App extends Component {
   handleFileSubmit = (fileState) => {
     this.setState({
       projectName: fileState.projectName,
-      file: fileState.file,
+      url: fileState.url,
+      fileName: fileState.fileName,
     });
   };
 
   render() {
-    const { characters } = this.state;
+    const { url, fileName } = this.state;
 
     return (
       <div className="container">
@@ -46,7 +48,7 @@ class App extends Component {
         <h1>AR Smart Worker Web Portal</h1>
         <FileInput handleSubmit={this.handleFileSubmit} />
         {/* <img src="/panda.jpg" alt="image"/> */}
-        <Scene url={this.state.file} />
+        <Scene url={url} fileName={fileName} />
       </div>
     );
   }
