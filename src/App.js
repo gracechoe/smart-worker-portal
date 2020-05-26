@@ -1,57 +1,155 @@
-import React, { Component, useRef, useState, Suspense } from "react";
-import Table from "./Table";
-import Form from "./Form";
+import React, { useState } from "react";
 import FileInput from "./FileInput";
 import Scene from "./Scene";
-import { Canvas, useFrame, useLoader } from "react-three-fiber";
-import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
+import Panel from "./Panel";
+import useDynamicLoader from "./hooks/useDynamicLoader";
 
-class App extends Component {
-  state = {
+const App = () => {
+  const [state, setWholeState] = useState({
     characters: [],
     projectName: "",
-    fileName: "robot.obj",
-    url: "/robot.obj",
+    fileName: "",
+    url: "",
+    file: null,
+    model: null,
+  });
+
+  const initialState = {
+    characters: [],
+    projectName: "",
+    fileName: "",
+    url: "",
+    model: null,
   };
 
-  removeCharacter = (index) => {
-    const { characters } = this.state;
+  const { loaded, object } = useDynamicLoader(state.url, state.fileName);
+  const objCopy = JSON.parse(JSON.stringify(object));
 
-    this.setState({
-      characters: characters.filter((character, i) => {
-        return i !== index;
-      }),
+  const setState = (partialState) => {
+    setWholeState({
+      ...state,
+      ...partialState,
     });
   };
 
-  handleSubmit = (character) => {
-    this.setState({ characters: [...this.state.characters, character] });
-  };
-
-  handleFileSubmit = (fileState) => {
-    this.setState({
+  const handleFileSubmit = (fileState) => {
+    setState({
       projectName: fileState.projectName,
       url: fileState.url,
       fileName: fileState.fileName,
+      file: fileState.file,
     });
   };
 
-  render() {
-    const { url, fileName } = this.state;
+  const postData = async (url = "", data = {}, contentType) => {
+    const postHeader = {
+      "Content-Type": contentType,
+      Authorization:
+        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZHdqaWFuZ0B1Y2kuZWR1IiwiaWF0IjoxNTg5MjA5OTA1LCJleHAiOjE1ODkyOTYzMDV9.gNpipNY8vbi5BRa1Y2zy8Np_6QLJSQiHRMK_5lvFYVA",
+    };
+    fetch(url, {
+      method: "POST", // *GET, POST, PUT, DELETE, etc.
+      headers: postHeader,
+      body: JSON.stringify(data), // body data type must match "Content-Type" header
+    })
+      .then((response) => {
+        return response.json();
+      })
+      .then((jsonResponse) => {
+        return jsonResponse;
+      });
+  };
 
-    return (
-      <div className="container">
-        {/* <h1>Table Example</h1>
-                <Table characterData={characters} removeCharacter={this.removeCharacter}/>
-                <Form handleSubmit={this.handleSubmit}/>
-                <br /> */}
-        <h1>AR Smart Worker Web Portal</h1>
-        <FileInput handleSubmit={this.handleFileSubmit} />
-        {/* <img src="/panda.jpg" alt="image"/> */}
-        <Scene url={url} fileName={fileName} />
-      </div>
-    );
-  }
-}
+  const postModel = () => {
+    console.log("At postModel");
+    var assetID = 0;
+    state.file.arrayBuffer().then((buffer) => {
+      const body = {
+        name: state.projectName,
+        data: buffer,
+      };
+      console.log(body);
+      postData(
+        "http://70.187.182.170:3000/api/assets/insert",
+        body,
+        "application/json"
+      ).then((data) => {
+        console.log(data);
+      });
+    });
+  };
+
+  const postSteps = (steps) => {
+    console.log("POSTING STEPS");
+    for (var i = 0; i < steps.length; i++) {
+      const textData = {
+        text: steps[i].text,
+        assetID: 2,
+        step: i + 1,
+        organization: "UCI",
+      };
+      const partsData = {
+        name: steps[i].part,
+        assetID: 2,
+        step: i + 1,
+        organization: "UCI",
+      };
+      console.log(textData);
+      console.log(partsData);
+      postData(
+        "http://70.187.182.170:3000/api/steps/insert",
+        textData,
+        "application/json"
+      ).then((data) => {
+        console.log(data);
+      });
+      if (steps[i].part !== "None") {
+        postData(
+          "http://70.187.182.170:3000/api/parts/insert",
+          partsData,
+          "application/json"
+        ).then((data) => {
+          console.log(data);
+        });
+      }
+    }
+  };
+
+  const handleTutorialSubmit = (steps) => {
+    // postModel();
+    postSteps(steps);
+    setState(initialState);
+    alert("New tutorial successfully created");
+  };
+
+  const portalHeader = " AR Smart Worker Web Portal";
+
+  const renderFileInput = () => {
+    console.log("loaded: ", loaded, object, state.projectName);
+    const projectHeader = "Tutorial: " + state.projectName;
+    console.log("renderfile: ", state.projectName);
+    if (state.projectName !== "" && loaded) {
+      return <h2>{projectHeader}</h2>;
+    } else {
+      return <FileInput handleSubmit={handleFileSubmit} />;
+    }
+  };
+
+  const renderScene = () => {
+    return state.projectName && <Scene obj={object} />;
+  };
+
+  return (
+    <div className="container">
+      <h1>{portalHeader}</h1>
+      {renderFileInput()}
+      {renderScene()}
+      <Panel
+        obj={state.projectName && loaded ? objCopy : null}
+        handleSubmit={handleTutorialSubmit}
+      />
+    </div>
+  );
+};
 
 export default App;
