@@ -10,6 +10,7 @@ class FileInput extends Component {
     projectName: "",
     fileName: "",
     url: null,
+    file: null,
   };
   state = this.initialState;
 
@@ -26,6 +27,7 @@ class FileInput extends Component {
     this.setState({
       fileName: name,
       url: URL.createObjectURL(event.target.files[0]),
+      file: event.target.files[0],
     });
   };
 
@@ -35,6 +37,13 @@ class FileInput extends Component {
   };
 
   render() {
+    const formStyle = {
+      color: "white",
+    };
+    const inputStyle = {
+      color: "white",
+      width: "75%",
+    };
     const { projectName } = this.state;
     return (
       <form>
@@ -54,7 +63,11 @@ class FileInput extends Component {
           accept=".obj, .fbx"
           onChange={this.handleFileChange}
         />
-        <input type="button" value="Submit" onClick={this.submitForm} />
+        <input
+          type="button"
+          value="Create New Tutorial"
+          onClick={this.submitForm}
+        />
       </form>
     );
   }

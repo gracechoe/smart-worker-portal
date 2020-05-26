@@ -1,74 +1,21 @@
-import React, { useState, Suspense, useRef, useRender } from "react";
-import { Canvas, useFrame, useLoader, useThree } from "react-three-fiber";
+import React, { Suspense, useRef, useRender } from "react";
+import { Canvas, useThree, useLoader } from "react-three-fiber";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
-import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import PropTypes from "prop-types";
+// import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import Box from "./Box";
 
-const LoadOBJ = (url) => {
-  return useLoader(OBJLoader, url);
-};
-
-const LoadFBX = (url) => {
-  return useLoader(FBXLoader, url);
-};
-
-const loaderMap = {
-  obj: LoadOBJ,
-  fbx: LoadFBX,
-};
-
-const Box = (props) => {
-  const mesh = useRef();
-
-  const [hovered, setHover] = useState(false);
-  const [active, setActive] = useState(false);
-
-  useFrame(() => (mesh.current.rotation.x = mesh.current.rotation.y += 0.01));
-
-  return (
-    <mesh
-      {...props}
-      ref={mesh}
-      scale={active ? [1.5, 1.5, 1.5] : [1, 1, 1]}
-      onClick={(e) => setActive(!active)}
-      onPointerOver={(e) => setHover(true)}
-      onPointerOut={(e) => setHover(false)}
-    >
-      <boxBufferGeometry attach="geometry" args={[30, 30, 30]} />
-      <meshStandardMaterial
-        attach="material"
-        color={hovered ? "hotpink" : "orange"}
-      />
-    </mesh>
-  );
-};
-
-const getModelType = (fileName) => {
-  var objExt = /(\.obj)$/i;
-  var fbxExt = /(\.fbx)$/i;
-  if (objExt.exec(fileName)) {
-    return "obj";
-  }
-  if (fbxExt.exec(fileName)) {
-    return "fbx";
-  }
-};
-
-const Asset = ({ url, fileName }) => {
-  // const { camera } = useThree();
-  // for (var mesh of obj.children) {
-  //   mesh.scale.set(1, 1, 1);
-  // }
-
-  var obj;
-  var loader = loaderMap[getModelType(fileName)];
-  obj = loader(url);
-
-  // console.log(obj);
-  obj.scale.set(1, 1, 1);
-  useFrame(() => (obj.rotation.y += 0.01));
-  return <primitive object={obj} dispose={null} />;
-};
+// const Asset = ({ url, fileName }) => {
+//   const obj = useLoader(OBJLoader, "robot.obj");
+//   if (url == "") {
+//     return <Box position={[0, 0, 0]} />;
+//   } else {
+//     console.log(obj);
+//     obj.scale.set(1, 1, 1);
+//     // useFrame(() => (obj.rotation.y += 0.01));
+//     return <primitive object={obj} dispose={null} />;
+//   }
+// };
 
 const Controls = () => {
   const orbitRef = useRef();
@@ -89,21 +36,34 @@ const Controls = () => {
   );
 };
 
-const Scene = ({ url, fileName }) => {
+const Model = ({ object }) => {
+  return object ? (
+    <primitive object={object} dispose={null} />
+  ) : (
+    <Box position={[0, 0, 0]} />
+  );
+};
+
+Model.propTypes = {
+  object: PropTypes.object.isRequired,
+};
+
+const Scene = ({ obj }) => {
   return (
     <>
       <Canvas
-        style={{ width: 1000, height: 500 }}
+        style={{ width: 500, height: 300 }}
         camera={{
           fov: 75,
           far: 1000,
-          position: [300, 300, 300],
+          position: [50, 70, 70],
         }}
       >
         <pointLight position={[50, 50, 50]} />
-        <Suspense fallback={<Box />}>
-          <Asset url={String(url)} fileName={fileName} />
-        </Suspense>
+        <Model object={obj} />
+        {/* <Suspense fallback={<Box />}>
+          <Model object={obj} />
+        </Suspense> */}
       </Canvas>
     </>
   );
