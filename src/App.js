@@ -41,42 +41,59 @@ const App = () => {
     });
   };
 
+  const bearerKey =
+    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZHdqaWFuZ0B1Y2kuZWR1IiwiaWF0IjoxNTg5MjA5OTA1LCJleHAiOjE1ODkyOTYzMDV9.gNpipNY8vbi5BRa1Y2zy8Np_6QLJSQiHRMK_5lvFYVA";
+
   const postData = async (url = "", data = {}, contentType) => {
     const postHeader = {
       "Content-Type": contentType,
-      Authorization:
-        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZHdqaWFuZ0B1Y2kuZWR1IiwiaWF0IjoxNTg5MjA5OTA1LCJleHAiOjE1ODkyOTYzMDV9.gNpipNY8vbi5BRa1Y2zy8Np_6QLJSQiHRMK_5lvFYVA",
+      Authorization: bearerKey,
     };
     fetch(url, {
-      method: "POST", // *GET, POST, PUT, DELETE, etc.
+      method: "POST",
       headers: postHeader,
-      body: JSON.stringify(data), // body data type must match "Content-Type" header
+      body: JSON.stringify(data),
     })
       .then((response) => {
         return response.json();
       })
       .then((jsonResponse) => {
         return jsonResponse;
+      })
+      .catch((error) => {
+        console.log("Error:", error);
       });
   };
 
   const postModel = () => {
     console.log("At postModel");
     var assetID = 0;
-    state.file.arrayBuffer().then((buffer) => {
-      const body = {
-        name: state.projectName,
-        data: buffer,
-      };
-      console.log(body);
-      postData(
-        "http://70.187.182.170:3000/api/assets/insert",
-        body,
-        "application/json"
-      ).then((data) => {
-        console.log(data);
-      });
+    const body = {
+      name: state.projectName,
+      data: state.file, // regular File object
+    };
+    console.log(body);
+    postData(
+      "http://70.187.182.170:3000/api/assets/insert",
+      body,
+      "application/x-www-form-urlencoded"
+    ).then((data) => {
+      console.log(data);
     });
+    // state.file.arrayBuffer().then((buffer) => {
+    //   const body = {
+    //     name: state.projectName,
+    //     data: buffer,
+    //   };
+    //   console.log(body);
+    //   postData(
+    //     "http://70.187.182.170:3000/api/assets/insert",
+    //     body,
+    //     "application/json"
+    //   ).then((data) => {
+    //     console.log(data);
+    //   });
+    // });
   };
 
   const postSteps = (steps) => {
@@ -116,8 +133,8 @@ const App = () => {
   };
 
   const handleTutorialSubmit = (steps) => {
-    // postModel();
-    postSteps(steps);
+    postModel();
+    // postSteps(steps);
     setState(initialState);
     alert("New tutorial successfully created");
   };
@@ -127,7 +144,6 @@ const App = () => {
   const renderFileInput = () => {
     console.log("loaded: ", loaded, object, state.projectName);
     const projectHeader = "Tutorial: " + state.projectName;
-    console.log("renderfile: ", state.projectName);
     if (state.projectName !== "" && loaded) {
       return <h2>{projectHeader}</h2>;
     } else {
@@ -139,15 +155,18 @@ const App = () => {
     return state.projectName && <Scene obj={object} />;
   };
 
+  const renderPanel = () => {
+    if (state.projectName !== "" && loaded) {
+      return <Panel obj={objCopy} handleSubmit={handleTutorialSubmit} />;
+    }
+  };
+
   return (
     <div className="container">
       <h1>{portalHeader}</h1>
       {renderFileInput()}
       {renderScene()}
-      <Panel
-        obj={state.projectName && loaded ? objCopy : null}
-        handleSubmit={handleTutorialSubmit}
-      />
+      {renderPanel()}
     </div>
   );
 };
