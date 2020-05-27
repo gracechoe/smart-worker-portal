@@ -44,21 +44,29 @@ const App = () => {
   const bearerKey =
     "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZHdqaWFuZ0B1Y2kuZWR1IiwiaWF0IjoxNTg5MjA5OTA1LCJleHAiOjE1ODkyOTYzMDV9.gNpipNY8vbi5BRa1Y2zy8Np_6QLJSQiHRMK_5lvFYVA";
 
-  const postData = async (url = "", data = {}, contentType) => {
+  const postData = (url = "", data = {}, contentType) => {
+    console.log(data);
+    const formData = new FormData();
+    formData.append("data", data.data);
+    formData.append("name", data.name);
+    for (var pair of formData.entries()) {
+      console.log(pair[0] + ", " + pair[1]);
+    }
     const postHeader = {
-      "Content-Type": contentType,
+      Accept: "application/json",
+      // "Content-Type": contentType,
       Authorization: bearerKey,
     };
     fetch(url, {
       method: "POST",
       headers: postHeader,
-      body: JSON.stringify(data),
+      body: formData,
     })
       .then((response) => {
         return response.json();
       })
-      .then((jsonResponse) => {
-        return jsonResponse;
+      .then((data) => {
+        return data;
       })
       .catch((error) => {
         console.log("Error:", error);
@@ -72,7 +80,6 @@ const App = () => {
       name: state.projectName,
       data: state.file, // regular File object
     };
-    console.log(body);
     postData(
       "http://70.187.182.170:3000/api/assets/insert",
       body,
@@ -80,20 +87,6 @@ const App = () => {
     ).then((data) => {
       console.log(data);
     });
-    // state.file.arrayBuffer().then((buffer) => {
-    //   const body = {
-    //     name: state.projectName,
-    //     data: buffer,
-    //   };
-    //   console.log(body);
-    //   postData(
-    //     "http://70.187.182.170:3000/api/assets/insert",
-    //     body,
-    //     "application/json"
-    //   ).then((data) => {
-    //     console.log(data);
-    //   });
-    // });
   };
 
   const postSteps = (steps) => {
@@ -135,7 +128,7 @@ const App = () => {
   const handleTutorialSubmit = (steps) => {
     postModel();
     // postSteps(steps);
-    setState(initialState);
+    // setState(initialState);
     alert("New tutorial successfully created");
   };
 

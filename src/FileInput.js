@@ -37,13 +37,6 @@ class FileInput extends Component {
   };
 
   render() {
-    const formStyle = {
-      color: "white",
-    };
-    const inputStyle = {
-      color: "white",
-      width: "75%",
-    };
     const { projectName } = this.state;
     return (
       <form>
