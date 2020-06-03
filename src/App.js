@@ -1,29 +1,12 @@
 import React, { useState } from "react";
-import FileInput from "./FileInput";
-import Scene from "./Scene";
-import Panel from "./Panel";
-import useDynamicLoader from "./hooks/useDynamicLoader";
+import AuthenticatedApp from "./AuthenticatedApp.js";
+import UnauthenticatedApp from "./UnauthenticatedApp.js";
 
 const App = () => {
   const [state, setWholeState] = useState({
-    characters: [],
-    projectName: "",
-    fileName: "",
-    url: "",
-    file: null,
-    model: null,
+    accessKey: "",
+    loggedIn: false,
   });
-
-  const initialState = {
-    characters: [],
-    projectName: "",
-    fileName: "",
-    url: "",
-    model: null,
-  };
-
-  const { loaded, object } = useDynamicLoader(state.url, state.fileName);
-  const objCopy = JSON.parse(JSON.stringify(object));
 
   const setState = (partialState) => {
     setWholeState({
@@ -32,139 +15,75 @@ const App = () => {
     });
   };
 
-  const handleFileSubmit = (fileState) => {
-    setState({
-      projectName: fileState.projectName,
-      url: fileState.url,
-      fileName: fileState.fileName,
-      file: fileState.file,
-    });
+  const setLogin = (accessKey) => {
+    setState({ loggedIn: true, accessKey: accessKey });
   };
 
-  const bearerKey =
-    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZHdqaWFuZ0B1Y2kuZWR1IiwiaWF0IjoxNTg5MjA5OTA1LCJleHAiOjE1ODkyOTYzMDV9.gNpipNY8vbi5BRa1Y2zy8Np_6QLJSQiHRMK_5lvFYVA";
-
-  const postModelData = async (url = "", data = {}) => {
-    const postHeader = {
-      Accept: "application/json",
-      Authorization: bearerKey,
-    };
-
-    const modelData = new FormData();
-    modelData.append("data", data.data);
-    modelData.append("name", data.name);
-    const response = await fetch(url, {
-      method: "POST",
-      headers: postHeader,
-      body: modelData,
-    });
-
-    return response.json();
-  };
-
-  const postStepsData = async (url = "", data = {}) => {
-    const postHeader = {
-      Accept: "application/json",
-      Authorization: bearerKey,
-      "Content-Type": "application/json",
-    };
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: postHeader,
-      body: JSON.stringify(data),
-    });
-
-    return response.json();
-  };
-
-  const postModel = async () => {
-    const body = {
-      name: state.projectName,
-      data: state.file, // regular File object
-    };
-    const assetData = await postModelData(
-      "http://70.187.182.170:3000/api/assets/insert",
-      body,
-      "application/x-www-form-urlencoded"
+  const renderApp = () => {
+    return state.loggedIn ? (
+      <AuthenticatedApp accessKey={state.accessKey} />
+    ) : (
+      <UnauthenticatedApp setLogin={setLogin} />
     );
-    console.log(assetData);
-
-    return assetData.id;
   };
 
-  const postSteps = async (steps, assetId) => {
-    console.log("POSTING STEPS");
-    for (var i = 0; i < steps.length; i++) {
-      const textData = {
-        text: steps[i].text,
-        assetID: assetId,
-        step: i + 1,
-        organization: "UCI",
-      };
-      const partsData = {
-        name: steps[i].part,
-        assetID: assetId,
-        step: i + 1,
-        organization: "UCI",
-      };
-      console.log(textData);
-      console.log(partsData);
-      await postStepsData(
-        "http://70.187.182.170:3000/api/steps/insert",
-        textData
-      ).then((data) => {
-        console.log(data);
-      });
-      if (steps[i].part !== "None") {
-        await postStepsData(
-          "http://70.187.182.170:3000/api/parts/insert",
-          partsData
-        ).then((data) => {
-          console.log(data);
-        });
-      }
-    }
+  const setLogout = () => {
+    setState({ accessKey: "", loggedIn: false });
   };
 
-  const handleTutorialSubmit = async (steps) => {
-    const assetId = await postModel();
-    console.log(assetId);
-    if (assetId) {
-      await postSteps(steps, assetId);
-    }
-    setState(initialState);
-    alert("New tutorial successfully created.");
+  const renderLogout = () => {
+    return (
+      state.loggedIn && (
+        <div style={buttonContainerStyle}>
+          <button style={buttonStyle} onClick={setLogout}>
+            Logout
+          </button>
+        </div>
+      )
+    );
   };
 
-  const portalHeader = " AR Smart Worker Web Portal";
+  const portalHeader = "AR SmartWorker Portal";
 
-  const renderFileInput = () => {
-    console.log("loaded: ", loaded, object, state.projectName);
-    const projectHeader = "Tutorial: " + state.projectName;
-    if (state.projectName !== "" && loaded) {
-      return <h2>{projectHeader}</h2>;
-    } else {
-      return <FileInput handleSubmit={handleFileSubmit} />;
-    }
+  const bannerStyle = {
+    "background-color": "#336699",
+    position: "fixed" /* Set the navbar to fixed position */,
+    top: 0,
+    width: "100%",
+    overflow: "hidden",
   };
 
-  const renderScene = () => {
-    return state.projectName && <Scene obj={object} />;
+  const headerStyle = {
+    color: "#ffffff",
+    margin: "0px 0px 0px 20px",
+    fontFamily: "Barlow Condensed",
+    display: "inline-block",
   };
 
-  const renderPanel = () => {
-    if (state.projectName !== "" && loaded) {
-      return <Panel obj={objCopy} handleSubmit={handleTutorialSubmit} />;
-    }
+  const appStyle = {
+    marginTop: 70,
+  };
+
+  const buttonContainerStyle = {
+    float: "right",
+  };
+
+  const buttonStyle = {
+    backgroundColor: "transparent",
+    borderColor: "transparent",
+    margin: "0 auto",
+    padding: "10px 10px 5px 0px",
+    fontSize: "11px",
+    float: "right",
   };
 
   return (
-    <div className="container">
-      <h1>{portalHeader}</h1>
-      {renderFileInput()}
-      {renderScene()}
-      {renderPanel()}
+    <div style={{ position: "relative" }}>
+      <div style={bannerStyle}>
+        <h2 style={headerStyle}>{portalHeader}</h2>
+        {renderLogout()}
+      </div>
+      <div style={appStyle}>{renderApp()}</div>
     </div>
   );
 };

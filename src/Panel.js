@@ -74,7 +74,12 @@ const TutorialEditor = ({ parts, handleSubmit }) => {
           </select>
         </label>
         <input type="button" value="Create new step" onClick={addStep} />
-        <input type="button" value="Submit tutorial" onClick={submitTutorial} />
+        <input
+          type="button"
+          value="Submit tutorial"
+          style={{ marginLeft: 10 }}
+          onClick={submitTutorial}
+        />
       </form>
     </div>
   );

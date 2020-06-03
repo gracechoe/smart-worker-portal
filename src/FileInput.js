@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { Input, InputLabel } from "@material-ui/core";
 
 // const fileValidation = (fileName) => {
 //   var allowedExtensions = /(\.obj|\.fbx)$/i;
