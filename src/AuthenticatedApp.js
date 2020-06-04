@@ -2,17 +2,20 @@ import React, { useState } from "react";
 import FileInput from "./FileInput";
 import Scene from "./Scene";
 import Panel from "./Panel";
+import Home from "./Home";
 import useDynamicLoader from "./hooks/useDynamicLoader";
 import { postModelData, postData } from "./handleRequest.js";
+import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import "react-tabs/style/react-tabs.css";
 
-const AuthenticatedApp = ({ accessKey }) => {
+const AuthenticatedApp = ({ accessKey, organization }) => {
   const [state, setWholeState] = useState({
     characters: [],
     projectName: "",
     fileName: "",
     url: "",
     file: null,
-    model: null,
+    model: null
   });
 
   const initialState = {
@@ -21,7 +24,7 @@ const AuthenticatedApp = ({ accessKey }) => {
     fileName: "",
     url: "",
     file: null,
-    model: null,
+    model: null
   };
 
   const { loaded, object } = useDynamicLoader(state.url, state.fileName);
@@ -65,13 +68,13 @@ const AuthenticatedApp = ({ accessKey }) => {
         text: steps[i].text,
         assetID: assetId,
         step: i + 1,
-        organization: "UCI",
+        organization: organization,
       };
       const partsData = {
         name: steps[i].part,
         assetID: assetId,
         step: i + 1,
-        organization: "UCI",
+        organization: organization,
       };
       console.log(textData);
       console.log(partsData);
@@ -128,9 +131,20 @@ const AuthenticatedApp = ({ accessKey }) => {
 
   return (
     <div className="container">
-      {renderFileInput()}
-      {renderScene()}
-      {renderPanel()}
+      <Tabs>
+        <TabList>
+          <Tab>Home</Tab>
+          <Tab>Create</Tab>
+        </TabList>
+        <TabPanel>
+          <Home accessKey={accessKey}/>
+        </TabPanel>
+        <TabPanel>
+          {renderFileInput()}
+          {renderScene()}
+          {renderPanel()}
+        </TabPanel>
+      </Tabs>
     </div>
   );
 };

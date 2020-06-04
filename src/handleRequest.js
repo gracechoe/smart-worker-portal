@@ -1,5 +1,19 @@
 // import { bearerKey } from "./key.js";
 
+const getRequest = async (url ="", accessKey = "") => {
+  const getHeader = {
+    Accept: "application/json",
+    Authorization: accessKey,
+  };
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: getHeader
+  })
+
+  return response.json();
+};
+
 const postModelData = async (url = "", data = {}, accessKey = "") => {
   const postHeader = {
     Accept: "application/json",
@@ -34,4 +48,4 @@ const postData = async (url = "", data = {}, accessKey = "") => {
   return response.json();
 };
 
-export { postModelData, postData };
+export { getRequest, postModelData, postData };

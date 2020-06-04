@@ -5,6 +5,7 @@ import UnauthenticatedApp from "./UnauthenticatedApp.js";
 const App = () => {
   const [state, setWholeState] = useState({
     accessKey: "",
+    organization: "",
     loggedIn: false,
   });
 
@@ -15,20 +16,20 @@ const App = () => {
     });
   };
 
-  const setLogin = (accessKey) => {
-    setState({ loggedIn: true, accessKey: accessKey });
+  const setLogin = (organization, accessKey) => {
+    setState({ loggedIn: true, accessKey: accessKey, organization: organization });
   };
 
   const renderApp = () => {
     return state.loggedIn ? (
-      <AuthenticatedApp accessKey={state.accessKey} />
+      <AuthenticatedApp accessKey={state.accessKey, state.organization} />
     ) : (
       <UnauthenticatedApp setLogin={setLogin} />
     );
   };
 
   const setLogout = () => {
-    setState({ accessKey: "", loggedIn: false });
+    setState({ accessKey: "", loggedIn: false, organization: "" });
   };
 
   const renderLogout = () => {

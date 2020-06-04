@@ -40,7 +40,7 @@ const LoginForm = ({ setUnregistered, setLogin }) => {
     if (response.error) {
       alert("Incorrect username or password");
     } else {
-      setLogin(response.payload.accessToken);
+      setLogin(response.payload.accessToken, response.payload.organization);
     }
   };
 
